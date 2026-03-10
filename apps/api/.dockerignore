@@ -1,0 +1,10 @@
+.dockerignore
+.editorconfig
+.gitignore
+.git/
+Dockefile
+node_modules/
+dist/
+nginx/
+README.md
+.env

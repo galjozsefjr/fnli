@@ -1,0 +1,22 @@
+{
+  "name": "fnli",
+  "version": "0.1.0",
+  "main": "index.js",
+  "repository": "git@github.com:galjozsefjr/fnli.git",
+  "author": "galjozsefjr",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "yarn@1.22.10",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "turbo": "2.8.14"
+  }
+}

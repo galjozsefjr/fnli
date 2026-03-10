@@ -1,2 +1,1 @@
-# fnli
-Fictional Numbers Lottery Inc. - Lottery Simulator
+#Fictional Numbers Lottery Inc. - Lottery Simulator

@@ -1,0 +1,9 @@
+.dockerignore
+.editorconfig
+.gitignore
+.git/
+.next/
+Dockefile
+node_modules/
+nginx/
+README.md
