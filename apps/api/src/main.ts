@@ -1,12 +1,22 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { Configuration } from './app.configuration';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
+import { AppModule } from './app.module';
+import { Configuration } from './app.configuration';
+import { setupSwagger } from './swagger/setup-swagger';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+    { bufferLogs: true },
+  );
   const config: ConfigService<Configuration> = app.get(ConfigService);
 
   const logger = app.get(Logger);
@@ -29,6 +39,8 @@ async function bootstrap() {
       source,
     });
   });
+
+  setupSwagger(app, 'api');
 
   try {
     const apiPort = config.get<string>('API_PORT') ?? 3000;
