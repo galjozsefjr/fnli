@@ -1,13 +1,15 @@
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 import type { IncomingMessage, ServerResponse } from 'http';
 import { LoggerModule } from 'nestjs-pino';
 
-import { type Configuration, validate } from './app.configuration';
+import { validate } from './app.configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { dataSourceOptions } from 'src/database/datasource';
+import { AuthModule } from 'src/auth/auth.module';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -15,6 +17,7 @@ const isProd = process.env.NODE_ENV === 'production';
   imports: [
     ConfigModule.forRoot({
       validate,
+      isGlobal: true,
     }),
     LoggerModule.forRoot({
       pinoHttp: {
@@ -47,27 +50,10 @@ const isProd = process.env.NODE_ENV === 'production';
         },
       },
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService<Configuration>) => ({
-        type: 'postgres',
-        url: config.get<string>('DATABASE_URL'),
-
-        host: config.get<string>('DATABASE_HOST'),
-        port: config.get<number>('DATABASE_PORT'),
-        username: config.get<string>('DATABASE_USERNAME'),
-        password: config.get<string>('DATABASE_PASSWORD'),
-        database: config.get<string>('DATABASE_NAME'),
-
-        autoLoadEntities: true,
-        synchronize: false,
-
-        logging: config.get('NODE_ENV') === 'development',
-      }),
-    }),
+    TypeOrmModule.forRoot(dataSourceOptions as TypeOrmModuleOptions),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
