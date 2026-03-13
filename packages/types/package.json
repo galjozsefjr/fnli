@@ -1,0 +1,8 @@
+{
+  "name": "@fnli/types",
+  "version": "0.0.1",
+  "exports": {
+    "./user": "./src/user.ts"
+  },
+  "types": "./src/index.ts"
+}
