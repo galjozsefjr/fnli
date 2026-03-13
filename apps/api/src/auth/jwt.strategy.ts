@@ -5,6 +5,11 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { Configuration } from '../app.configuration';
 import { UserAuthToken } from './auth-token.decorator';
 
+type Payload = {
+  sub: UserAuthToken['userId'];
+  username: UserAuthToken['username'];
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService<Configuration>) {
@@ -15,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: any): UserAuthToken {
+  validate(payload: Payload): UserAuthToken {
     return { userId: payload.sub, username: payload.username };
   }
 }

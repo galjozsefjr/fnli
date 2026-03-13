@@ -18,11 +18,19 @@ export function ToDate({
     if (!(value instanceof Date || isDateString(value))) {
       return null;
     }
-    const date = new Date(value);
-    typeof hours === 'number' && date.setUTCHours(hours);
-    typeof minutes === 'number' && date.setMinutes(minutes);
-    typeof seconds === 'number' && date.setSeconds(seconds);
-    typeof milliSeconds === 'number' && date.setMilliseconds(milliSeconds);
+    const date = new Date(value as number | string | Date);
+    if (typeof hours === 'number') {
+      date.setUTCHours(hours);
+    }
+    if (typeof minutes === 'number') {
+      date.setMinutes(minutes);
+    }
+    if (typeof seconds === 'number') {
+      date.setSeconds(seconds);
+    }
+    if (typeof milliSeconds === 'number') {
+      date.setMilliseconds(milliSeconds);
+    }
     return date;
   });
 }

@@ -23,11 +23,16 @@ const PASSWORD_REQUIREMENTS: IsStrongPasswordOptions = {
 
 const PasswordValidationMessage = ({
   constraints: [{ minLength, minLowercase, minNumbers }],
-}: ValidationArguments) => `The password must be at least ${minLength} characters, containing at least ${minNumbers} number and ${minLowercase} lower case letter`;
+}: ValidationArguments) =>
+  `The password must be at least ${minLength} characters, containing at least ${minNumbers} number and ${minLowercase} lower case letter`;
 
 export class LoginRequest {
   @Transform(({ value }) => (value ? `${value}`.trim().toLowerCase() : ''))
-  @ApiProperty({ type: String, description: 'Username (email address)', example: 'admin@local.com' })
+  @ApiProperty({
+    type: String,
+    description: 'Username (email address)',
+    example: 'admin@local.com',
+  })
   @IsString()
   @IsNotEmpty()
   @IsEmail(
@@ -38,9 +43,16 @@ export class LoginRequest {
   )
   username: string;
 
-  @ApiProperty({ type: String, description: 'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter', example: 'admin123' })
+  @ApiProperty({
+    type: String,
+    description:
+      'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter',
+    example: 'admin123',
+  })
   @IsString()
-  @IsStrongPassword(PASSWORD_REQUIREMENTS, { message: PasswordValidationMessage })
+  @IsStrongPassword(PASSWORD_REQUIREMENTS, {
+    message: PasswordValidationMessage,
+  })
   password: string;
 }
 
@@ -51,7 +63,8 @@ export class LoginResponse {
 
 export class RegisterUserRequestBody
   extends LoginRequest
-  implements UpdateUserData {
+  implements UpdateUserData
+{
   @ApiProperty({ type: String, description: 'First name', example: '' })
   @TrimmedText()
   @IsString()
@@ -65,8 +78,15 @@ export class RegisterUserRequestBody
   lastName: string;
 }
 
-export class RegisterUserResponse extends PickType(RegisterUserRequestBody, ['firstName', 'lastName'] as const) {
-  @ApiProperty({ type: String, description: 'User identifier', example: 'c3621d67-c304-41ad-b965-907f74d46bf2' })
+export class RegisterUserResponse extends PickType(RegisterUserRequestBody, [
+  'firstName',
+  'lastName',
+] as const) {
+  @ApiProperty({
+    type: String,
+    description: 'User identifier',
+    example: 'c3621d67-c304-41ad-b965-907f74d46bf2',
+  })
   userId: string;
 }
 
@@ -81,14 +101,28 @@ export const validateLoginRequest = async (
 };
 
 export class ChangePasswordBody {
-  @ApiProperty({ type: String, description: 'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter', example: 'admin123' })
+  @ApiProperty({
+    type: String,
+    description:
+      'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter',
+    example: 'admin123',
+  })
   @IsString()
-  @IsStrongPassword(PASSWORD_REQUIREMENTS, { message: PasswordValidationMessage })
+  @IsStrongPassword(PASSWORD_REQUIREMENTS, {
+    message: PasswordValidationMessage,
+  })
   oldPassword: string;
 
-  @ApiProperty({ type: String, description: 'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter', example: 'admin321' })
+  @ApiProperty({
+    type: String,
+    description:
+      'The password must be at least 8 characters, containing at least 1 number and 1 lower case letter',
+    example: 'admin321',
+  })
   @IsString()
-  @IsStrongPassword(PASSWORD_REQUIREMENTS, { message: PasswordValidationMessage })
+  @IsStrongPassword(PASSWORD_REQUIREMENTS, {
+    message: PasswordValidationMessage,
+  })
   password: string;
 
   @ApiProperty({

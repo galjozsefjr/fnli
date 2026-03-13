@@ -9,12 +9,15 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
-  public async validateUser(username: string, pass: string): Promise<User | null> {
+  public async validateUser(
+    username: string,
+    pass: string,
+  ): Promise<User | null> {
     const user = await this.usersService.findOne(username);
     if (user && (await compare(pass, user.password))) {
-      const { password, ...userData } = user;
+      const { password: _password, ...userData } = user;
       return userData;
     }
     return null;

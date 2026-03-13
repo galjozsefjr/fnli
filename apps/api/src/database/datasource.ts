@@ -18,12 +18,8 @@ export const dataSourceOptions: DataSourceOptions = {
   username: configService.get<string>('DATABASE_USERNAME'),
   password: configService.get<string>('DATABASE_PASSWORD'),
   database: configService.get<string>('DATABASE_NAME'),
-  entities: [
-    join(`${__dirname}/../**/*.entity.{js,ts}`),
-  ],
-  migrations: [
-    join(`${__dirname}/migrations/**/*.ts`),
-  ],
+  entities: [join(`${__dirname}/../**/*.entity.{js,ts}`)],
+  migrations: [join(`${__dirname}/migrations/**/*.ts`)],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),
 

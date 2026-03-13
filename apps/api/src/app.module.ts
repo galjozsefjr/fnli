@@ -56,4 +56,4 @@ const isProd = process.env.NODE_ENV === 'production';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

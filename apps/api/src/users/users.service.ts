@@ -6,7 +6,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
-import { ChangePasswordBody, RegisterUserRequestBody, UpdateUserDataBody } from './user.type';
+import {
+  ChangePasswordBody,
+  RegisterUserRequestBody,
+  UpdateUserDataBody,
+} from './user.type';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { DataSource, Repository } from 'typeorm';
@@ -19,8 +23,8 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User) private users: Repository<User>,
-    @InjectDataSource() private dataSource: DataSource
-  ) { }
+    @InjectDataSource() private dataSource: DataSource,
+  ) {}
 
   public findOne(email: string): Promise<User | null> {
     return this.users.findOneBy({ email });
@@ -35,7 +39,7 @@ export class UsersService {
   }
 
   protected async isExists(email: string) {
-    return await this.users.countBy({ email }) > 0;
+    return (await this.users.countBy({ email })) > 0;
   }
 
   public async register(userData: RegisterUserRequestBody) {
@@ -52,7 +56,10 @@ export class UsersService {
     });
   }
 
-  public async changePassword(userId: string, passwordData: ChangePasswordBody) {
+  public async changePassword(
+    userId: string,
+    passwordData: ChangePasswordBody,
+  ) {
     const user = await this.findById(userId);
     if (!user) {
       throw new NotFoundException('Cannot find user');
@@ -61,28 +68,40 @@ export class UsersService {
     if (!validPass) {
       throw new ForbiddenException('Invalid password');
     }
-    const samePasswordUsed = await compare(passwordData.password, user.password);
+    const samePasswordUsed = await compare(
+      passwordData.password,
+      user.password,
+    );
     if (samePasswordUsed) {
-      throw new ConflictException('The new and old password cannot be the same');
+      throw new ConflictException(
+        'The new and old password cannot be the same',
+      );
     }
     await this.dataSource.transaction(async (entityManager) => {
       const password = await this.createPasswordHash(passwordData.password);
-      entityManager.update(User, { id: user.id }, { password });
+      return entityManager.update(User, { id: user.id }, { password });
     });
     return this.findById(userId);
   }
 
-  public async updateUserData(userId: string, userData: UpdateUserDataBody): Promise<User> {
+  public async updateUserData(
+    userId: string,
+    userData: UpdateUserDataBody,
+  ): Promise<User> {
     const user = await this.findById(userId);
     if (!user) {
       throw new NotFoundException('Cannot find user');
     }
     await this.dataSource.transaction(async (entityManager) => {
       const { firstName, lastName } = userData;
-      return entityManager.update(User, { id: userId }, {
-        firstName,
-        lastName,
-      });
+      return entityManager.update(
+        User,
+        { id: userId },
+        {
+          firstName,
+          lastName,
+        },
+      );
     });
     return this.findById(userId) as Promise<User>;
   }
