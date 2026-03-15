@@ -8,8 +8,9 @@ import { LoggerModule } from 'nestjs-pino';
 import { validate } from './app.configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { dataSourceOptions } from 'src/database/datasource';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from './auth/auth.module';
+import { dataSourceOptions } from './database/datasource';
+import { SimulationsModule } from './simulations/simulations.module';
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -52,6 +53,7 @@ const isProd = process.env.NODE_ENV === 'production';
     }),
     TypeOrmModule.forRoot(dataSourceOptions as TypeOrmModuleOptions),
     AuthModule,
+    SimulationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
