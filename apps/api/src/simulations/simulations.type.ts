@@ -101,7 +101,7 @@ export class PaginatedSimulation extends PaginatedResult<Simulation> {
     items: { $ref: getSchemaPath(SimulationDto) },
     description: 'Simulations started by user',
   })
-  data: Simulation[] = [];
+  declare data: Simulation[];
 }
 
 export class SimulationDetailsDto

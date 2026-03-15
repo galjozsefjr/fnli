@@ -6,7 +6,11 @@ import { useAuthContext } from '@/auth/auth.context';
 import { LoginForm } from './LoginForm';
 import { toast } from 'sonner';
 
-export const LoginFormControl: FC = () => {
+export type LoginFormControlProps = Readonly<{
+  redirect?: string;
+}>;
+
+export const LoginFormControl: FC<LoginFormControlProps> = ({ redirect }) => {
   const { login } = useAuthContext();
   const [error, setError] = useState<string>();
   const { push: navigate } = useRouter();
@@ -16,7 +20,9 @@ export const LoginFormControl: FC = () => {
       setError(undefined);
       try {
         await login(username, password);
-        navigate('/');
+        if (redirect) {
+          navigate(redirect);
+        }
         return true;
       } catch {
         setError('Invalid username or password');
@@ -24,8 +30,10 @@ export const LoginFormControl: FC = () => {
         return false;
       }
     },
-    [navigate, login]
+    [navigate, redirect, login]
   );
 
   return <LoginForm onLogin={onLogin} errorMessage={error} />;
 };
+
+export default LoginFormControl;
