@@ -28,6 +28,7 @@ services:
       - DATABASE_NAME=fnli
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
+      - JWT_TOKEN_SECRET=${JWT_TOKEN_SECRET}
     ports:
       - '3001:3001'
     volumes:
