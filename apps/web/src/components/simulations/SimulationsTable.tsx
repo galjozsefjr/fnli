@@ -99,7 +99,7 @@ export const SimulationsTable: FC<SimulationsTableProps> = ({ simulations, pagin
               <TableRow
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
-                onClick={() => goto(`simulations/${row.id}`)}
+                onClick={() => goto(`simulations/${row.original.id}`)}
                 className="cursor-pointer"
               >
                 {row.getVisibleCells().map((cell) => (

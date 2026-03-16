@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { type FC, type PropsWithChildren, useCallback } from 'react';
+import { type FC, type PropsWithChildren, useCallback, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useLocalStorage } from 'usehooks-ts';
 import { useLogin } from '@/hooks/useLogin';
@@ -44,6 +44,12 @@ export const AuthProvider: FC<PropsWithChildren> = ({ children }) => {
     }
     return true;
   }, [authToken, logout]);
+
+  useEffect(() => {
+    if (error?.statusCode === 401) {
+      logout();
+    }
+  }, [error, logout])
 
   const state: AuthContext = {
     login,

@@ -13,7 +13,7 @@ export const PlayedNumbers: FC<PlayedNumbersProps> = ({ numbers, className, isEr
   const numbersList = numbers?.length === 5 ? numbers : Array.from({ length: 5 }, (_, index) => numbers?.[index] ?? undefined);
 
   return (
-    <div className={cn('flex gap-2', className)}>
+    <div className={cn('flex gap-3 sm:gap-4', className)}>
       {numbersList.map((item, index) => <LotteryNumber number={item} isError={isError} key={`${index}_${item}`} />)}
     </div>
   )

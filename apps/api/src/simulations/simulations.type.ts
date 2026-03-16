@@ -110,6 +110,7 @@ export class SimulationDetailsDto
     'status',
     'totalDraws',
     'fixedNumbers',
+    'simulationInterval',
   ] as const)
   implements SimulationDetails
 {
@@ -126,7 +127,14 @@ export class SimulationDetailsDto
   matches: HitStatistic[];
 
   constructor(
-    { id, status, totalDraws, fixedNumbers, ticketPrice }: SimulationEntity,
+    {
+      id,
+      status,
+      totalDraws,
+      fixedNumbers,
+      ticketPrice,
+      simulationInterval,
+    }: SimulationEntity,
     hitStatistic: HitStatistic[],
   ) {
     super();
@@ -135,6 +143,7 @@ export class SimulationDetailsDto
     this.totalDraws = totalDraws;
     this.fixedNumbers = fixedNumbers;
     this.totalSpent = totalDraws * ticketPrice;
+    this.simulationInterval = simulationInterval;
     const matches = hitStatistic.reduce(
       (matchList, stat) => {
         matchList.set(stat.matches, stat.hitcount);

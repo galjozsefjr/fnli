@@ -3,7 +3,7 @@ import { type FC } from 'react';
 
 export type NumberSelectorProps = Readonly<{
   value: number[];
-  onChange: (selectedNumbers: []) => void;
+  onChange: (selectedNumbers: number[]) => void;
 }>;
 
 export const NumberSelector: FC<NumberSelectorProps> = ({ value, onChange }) => {

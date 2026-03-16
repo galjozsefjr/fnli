@@ -36,7 +36,7 @@ export type SimulationEntity = {
   updatedAt: Date;
 };
 
-export type SimulationDetails = Pick<SimulationEntity, 'id' | 'status' | 'totalDraws' | 'fixedNumbers'> & {
+export type SimulationDetails = Pick<SimulationEntity, 'id' | 'status' | 'totalDraws' | 'fixedNumbers' | 'simulationInterval'> & {
   totalSpent: number;
   matches: HitStatistic[];
 };

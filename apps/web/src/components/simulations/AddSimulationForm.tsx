@@ -47,7 +47,7 @@ export const AddSimulationForm: FC<AddSimulationFormProps> = ({ }) => {
       toast.success('Simulation created successfully');
       await new Promise<void>((resolve) => {
         window.setTimeout(() => {
-          goto(`/simulation/${newSimulation.id}`);
+          goto(`/simulations/${newSimulation.id}`);
           resolve();
         }, 3000);
       });

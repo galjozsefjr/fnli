@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
       }
     ];
   },
-  output: process.env.NODE_ENV === 'production' ? 'standalone' : 'export'
+  output: process.env.NODE_ENV === 'production' ? 'standalone' : undefined
 };
 
 export default nextConfig;
