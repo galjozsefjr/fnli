@@ -33,7 +33,7 @@ export const SimulationDetailsPage: FC<SimulationDetailsPageProps> = ({ simulati
             <dt className="text-base grow-1 base">Number of tickets:</dt>
             <dd className="text-base font-extrabold pl-6 text-nowrap">{data?.totalDraws && numberFormat(data?.totalDraws)}</dd>
             <dt className="text-sm">Years spent:</dt>
-            <dd className="text-sm pl-6">{yearsSpent}</dd>
+            <dd className="text-sm pl-6">{yearsSpent !== undefined && Math.floor(yearsSpent)}</dd>
             <dt className="text-sm">Cost of tickets:</dt>
             <dd className="text-sm pl-6 text-nowrap">{data?.totalSpent}</dd>
           </dl>

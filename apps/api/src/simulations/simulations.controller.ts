@@ -2,10 +2,12 @@ import {
   Body,
   Controller,
   Get,
+  MessageEvent,
   Param,
   Patch,
   Post,
   Query,
+  Sse,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -18,6 +20,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { distinct, interval, map, Observable, switchMap } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthToken, type UserAuthToken } from 'src/auth/auth-token.decorator';
 
@@ -105,6 +108,22 @@ export class SimulationsController {
       token.userId,
       simulationId,
       simulationInterval,
+    );
+  }
+
+  @Sse('/:simulationId/events')
+  realTimeUpdate(
+    @AuthToken() token: UserAuthToken,
+    @Param() { simulationId }: SimulationId,
+  ): Observable<MessageEvent> {
+    return interval(500).pipe(
+      switchMap(() =>
+        this.simulations.getSimulationById(token.userId, simulationId),
+      ),
+      distinct(),
+      map((simulation) => {
+        return { data: simulation };
+      }),
     );
   }
 }
