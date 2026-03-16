@@ -2,6 +2,8 @@
   "name": "@fnli/types",
   "version": "0.0.1",
   "exports": {
+    "./common": "./src/common.ts",
+    "./simulations": "./src/simulations.ts",
     "./user": "./src/user.ts"
   },
   "types": "./src/index.ts"

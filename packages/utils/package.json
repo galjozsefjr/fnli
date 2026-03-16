@@ -1,0 +1,8 @@
+{
+  "name": "@fnli/utils",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./src/index.ts",
+    "./numberFormat": "./src/numberFormat.ts"
+  }
+}

@@ -14,6 +14,7 @@ export interface AuthContext {
   authToken?: string;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  isAuthenticated: () => boolean;
 }
 
 export const createAuthContext = () => {

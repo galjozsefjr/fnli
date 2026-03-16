@@ -18,4 +18,4 @@ export const useSignup = <Data = UserCreatedResponse, Error = ApiError>() => {
       body: JSON.stringify(arg)
     });
   });
-}
+};

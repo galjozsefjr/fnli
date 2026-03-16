@@ -6,7 +6,7 @@ export default function LoginPage() {
       <header className="mb-5">
         <h2 className="font-bold text-4xl/14">Login</h2>
       </header>
-      <LoginFormControl />
+      <LoginFormControl redirect={'/'} />
     </>
   );
 }

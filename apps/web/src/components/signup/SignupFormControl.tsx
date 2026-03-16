@@ -10,7 +10,7 @@ import type { ApiError } from '@/hooks/apiError';
 import { toast } from 'sonner';
 
 export const SignupFormControl: FC = () => {
-  const { authToken } = useAuthContext();
+  const { isAuthenticated } = useAuthContext();
   const [error, setError] = useState<string>();
   const { push: navigate } = useRouter();
   const { trigger: signup } = useSignup();
@@ -29,7 +29,7 @@ export const SignupFormControl: FC = () => {
   }, [signup, navigate]);
 
   useEffect(() => {
-    if (authToken) {
+    if (isAuthenticated()) {
       // already logged-in
       navigate('/');
     }
