@@ -10,7 +10,7 @@ These tools will be needed to be available on your machine:
 - Create a `.env` file based on `.env.example` in the root directory. The application will use these defined parameters.
 - Run command: `docker-compose up` - it builds a production-ready environment
 - Run command: `docker exec -it api yarn migration:run` - if fails run manually from `apps/api` with `yarn migration:run` - see Development environment setup
-- When finished open your browser at (http://localhost:8080)[http://localhost:8080]
+- When finished open your browser at [http://localhost:8080](http://localhost:8080)
 
 ## Development environment
 To get a development environment please follow these steps:
@@ -20,7 +20,7 @@ To get a development environment please follow these steps:
 - Start `db` section in the docker-compose.yml
 - Run `yarn migration:run` command from `apps/api` directory
 - Run `yarn dev` command on the root directory of the application.
-- Open your browser at (http://localhost:3000)[http://localhost:3000]
+- Open your browser at [http://localhost:3000](http://localhost:3000)
 
 ## Additional info
 API documentation available on OAS format from a running environment on your machine at `/api` endpoint. (http://localhost:8080/api in prod or http://localhost:3001/api in dev mode)
