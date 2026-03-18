@@ -45,6 +45,12 @@ export class Simulation implements SimulationEntity {
   @OneToMany(() => Hits, () => Simulation)
   hits?: Hits[];
 
+  @Column('smallint', { array: true, nullable: true })
+  lastDraw: number[] | null;
+
+  @Column('smallint', { array: true, nullable: true })
+  lastPlay: number[] | null;
+
   @Column('smallint')
   simulationInterval: number;
 

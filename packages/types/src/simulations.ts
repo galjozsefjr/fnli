@@ -32,11 +32,13 @@ export type SimulationEntity = {
   fixedNumbers: number[] | null;
   simulationInterval: number;
   hits?: HitsEntity[];
+  lastDraw: number[] | null;
+  lastPlay: number[] | null;
   createdAt: Date;
   updatedAt: Date;
 };
 
-export type SimulationDetails = Pick<SimulationEntity, 'id' | 'status' | 'totalDraws' | 'fixedNumbers' | 'simulationInterval'> & {
+export type SimulationDetails = Pick<SimulationEntity, 'id' | 'status' | 'totalDraws' | 'fixedNumbers' | 'simulationInterval' | 'lastDraw' | 'lastPlay'> & {
   totalSpent: number;
   matches: HitStatistic[];
 };

@@ -9,7 +9,7 @@ export class LotteryService {
     while (valueSet.size < count) {
       valueSet.add(randomInt(start, end + 1));
     }
-    return Array.from(valueSet.values()).toSorted();
+    return Array.from(valueSet.values()).toSorted((a, b) => a - b);
   }
 
   countMatches(lotteryNumbersA: number[], lotteryNumbersB: number[]) {

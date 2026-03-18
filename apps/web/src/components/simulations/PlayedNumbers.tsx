@@ -10,7 +10,7 @@ export type PlayedNumbersProps = Readonly<{
 }>
 
 export const PlayedNumbers: FC<PlayedNumbersProps> = ({ numbers, className, isError }) => {
-  const numbersList = numbers?.length === 5 ? numbers : Array.from({ length: 5 }, (_, index) => numbers?.[index] ?? undefined);
+  const numbersList = (numbers?.length === 5 ? numbers : Array.from({ length: 5 }, (_, index) => numbers?.[index] ?? undefined)).toSorted((a, b) => (a ?? 0) - (b ?? 0));
 
   return (
     <div className={cn('flex gap-3 sm:gap-4', className)}>

@@ -14,10 +14,10 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { Simulation } from './simulations.entity';
+import { type Simulation } from './simulations.entity';
 import { PaginatedResult } from 'src/utils/pagination';
 import {
-  ChangeSimulationSpeed,
+  type ChangeSimulationSpeed,
   type CreateSimulationRequest,
   type HitStatistic,
   type SimulationDetails,
@@ -80,6 +80,24 @@ export class SimulationDto implements Omit<SimulationEntity, 'owner' | 'hits'> {
   simulationInterval: number;
 
   @ApiProperty({
+    type: [Number],
+    description: 'Last draws',
+    example: [12, 45, 63, 72, 89],
+    nullable: true,
+    required: false,
+  })
+  lastDraw: number[] | null;
+
+  @ApiProperty({
+    type: [Number],
+    description: 'Last played numbers',
+    example: [13, 45, 63, 72, 90],
+    nullable: true,
+    required: false,
+  })
+  lastPlay: number[] | null;
+
+  @ApiProperty({
     type: 'string',
     format: 'date-time',
     description: 'Simulation created time',
@@ -111,6 +129,8 @@ export class SimulationDetailsDto
     'totalDraws',
     'fixedNumbers',
     'simulationInterval',
+    'lastDraw',
+    'lastPlay',
   ] as const)
   implements SimulationDetails
 {
@@ -134,6 +154,8 @@ export class SimulationDetailsDto
       fixedNumbers,
       ticketPrice,
       simulationInterval,
+      lastDraw,
+      lastPlay,
     }: SimulationEntity,
     hitStatistic: HitStatistic[],
   ) {
@@ -144,6 +166,8 @@ export class SimulationDetailsDto
     this.fixedNumbers = fixedNumbers;
     this.totalSpent = totalDraws * ticketPrice;
     this.simulationInterval = simulationInterval;
+    this.lastDraw = lastDraw;
+    this.lastPlay = lastPlay;
     const matches = hitStatistic.reduce(
       (matchList, stat) => {
         matchList.set(stat.matches, stat.hitcount);

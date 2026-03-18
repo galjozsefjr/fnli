@@ -32,7 +32,7 @@ export class SimulationsService {
     private hits: HitsService,
     private lottery: LotteryService,
     private schedulerRegistry: SchedulerRegistry,
-  ) { }
+  ) {}
 
   public async getSimulationsForUser(userId: string, offset = 0, limit = 20) {
     const [simulations, total] = await this.simulations.findAndCount({
@@ -51,8 +51,10 @@ export class SimulationsService {
   }
 
   public async getSimulationById(userId: string, simulationId: string) {
-    const simulation = await this.getSimulation(userId, simulationId);
-    const hitStatistic = await this.hits.getHitStatistics(simulationId);
+    const [simulation, hitStatistic] = await Promise.all([
+      this.getSimulation(userId, simulationId),
+      this.hits.getHitStatistics(simulationId),
+    ]);
     return new SimulationDetailsDto(simulation, hitStatistic);
   }
 
@@ -167,6 +169,8 @@ export class SimulationsService {
       const updates = await manager.update(Simulation, simulationId, {
         status,
         totalDraws: () => `total_draws + 1`,
+        lastDraw: winningNumbers,
+        lastPlay: currentNumbers,
       });
       this.log.debug(
         '[simulation %s] simulation updated %o',

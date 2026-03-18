@@ -38,4 +38,15 @@ export class HitsService {
     const results = await queryBuilder.getRawMany<RawHitStatistic>();
     return results.map((item) => new HitStatisticDto(item));
   }
+
+  public async getLastHit(simulationId: string) {
+    return this.hits.findOne({
+      where: {
+        simulation: {
+          id: simulationId,
+        },
+      },
+      order: { createdAt: 'DESC' },
+    });
+  }
 }

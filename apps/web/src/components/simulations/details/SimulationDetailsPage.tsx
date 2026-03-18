@@ -42,11 +42,11 @@ export const SimulationDetailsPage: FC<SimulationDetailsPageProps> = ({ simulati
         <div className="flex flex-col gap-6">
           <div className="flex flex-row items-center gap-5 sm:gap-7">
             <p className="w-[105px] sm:w-[133px] text-xs sm:text-base font-semibold sm:font-normal">Winning numbers:</p>
-            <PlayedNumbers numbers={[]} />
+            <PlayedNumbers numbers={data?.lastDraw ?? []} />
           </div>
           <div className="flex flex-row items-center gap-5 sm:gap-7">
             <p className="w-[105px] sm:w-[133px] text-xs sm:text-base font-semibold sm:font-normal">Your numbers:</p>
-            <PlayedNumbers numbers={[]} />
+            <PlayedNumbers numbers={data?.lastPlay ?? []} />
           </div>
           <div className="flex flex-row items-center gap-6 sm:gap-12">
             <p className="text-xs sm:text-base font-semibold sm:font-normal">Play with random numbers:</p>
