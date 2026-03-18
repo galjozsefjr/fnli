@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { type DataSource, type Repository } from 'typeorm';
 import { Simulation } from './simulations.entity';
@@ -12,11 +17,14 @@ import {
   type CreateSimulationRequest,
 } from '@fnli/types/simulations';
 import dayjs from 'dayjs';
-import { SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
 export class SimulationsService {
   private log = new Logger(SimulationsService.name);
+
+  static UNCHANGE_TIMEOUT = 15;
+  static EXPIRE_YEARS = 500;
 
   constructor(
     @InjectRepository(Simulation) private simulations: Repository<Simulation>,
@@ -93,7 +101,12 @@ export class SimulationsService {
     interval: number,
   ) {
     // check if simulation exists & belongs to the user
-    await this.getSimulation(userId, simulationId);
+    const simulation = await this.getSimulation(userId, simulationId);
+    if (simulation.status === 'finished') {
+      throw new ConflictException(
+        'Cannot change the speed of a finished simulation',
+      );
+    }
     const updateResult = await this.dataSource.transaction(
       async (entityManager) => {
         return await entityManager.update(Simulation, simulationId, {
@@ -108,6 +121,7 @@ export class SimulationsService {
   }
 
   public async runSimulation(simulationId: string) {
+    this.log.debug('Running simulation %s', simulationId);
     const simulation = await this.simulations.findOneBy({ id: simulationId });
     if (!simulation || simulation.status === SimulationStatus.FINISHED) {
       this.log.error(
@@ -129,6 +143,7 @@ export class SimulationsService {
     }
 
     await this.dataSource.transaction(async (manager) => {
+      this.log.debug('[simulation %s] start update', simulationId);
       const winningNumbers = this.lottery.createRandomLotteryNumbers();
       const currentNumbers =
         simulation.fixedNumbers ?? this.lottery.createRandomLotteryNumbers();
@@ -136,15 +151,28 @@ export class SimulationsService {
         winningNumbers,
         currentNumbers,
       );
+      this.log.debug(
+        '[simulation %s] numbers created: bet - [%s] win - [%s] - %d matches',
+        simulationId,
+        currentNumbers.join(','),
+        winningNumbers.join(','),
+        matchingItems,
+      );
       const status: SimulationStatus =
         matchingItems === 5
           ? SimulationStatus.FINISHED
           : SimulationStatus.STARTED;
+      this.log.debug('[simulation %s] new status: %s', simulationId, status);
 
-      await manager.update(Simulation, simulationId, {
+      const updates = await manager.update(Simulation, simulationId, {
         status,
         totalDraws: () => `total_draws + 1`,
       });
+      this.log.debug(
+        '[simulation %s] simulation updated %o',
+        simulationId,
+        updates,
+      );
       if (matchingItems > 1) {
         const hit = manager.create(Hits, {
           simulation: { id: simulationId },
@@ -153,23 +181,39 @@ export class SimulationsService {
           matches: matchingItems,
         });
         await manager.save(hit);
+        this.log.debug('[simulation %s] save match: %d', simulationId, hit.id);
       }
     });
+    this.log.debug('[simulation %s] schedule next job', simulationId);
     this.scheduleNext(simulationId, simulation.simulationInterval);
   }
 
   protected scheduleNext(simulationId: string, interval: number) {
     const name = `${simulationId}:scheduler`;
-    const existing = this.schedulerRegistry.getTimeout(name);
-    if (existing) {
+    const exists = this.schedulerRegistry.doesExist('timeout', name);
+    if (exists) {
+      this.log.debug(
+        '[scheduleSimulation %s] stop & remove existing job - %d',
+        simulationId,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const existing = this.schedulerRegistry.getTimeout(name);
       this.schedulerRegistry.deleteTimeout(name);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       clearTimeout(existing);
     }
+    this.log.debug(
+      '[scheduleSimulation %s] created scheduled job %s - start in %d ms',
+      simulationId,
+      name,
+      interval,
+    );
     const timeout = setTimeout(() => {
-      this.log.info(`Start next job for "${simulationId}" in ${interval} ms`);
+      this.log.log(`Start next job for "${simulationId}" in ${interval} ms`);
       this.runSimulation(simulationId).catch((error) => this.log.error(error));
     }, interval);
     this.schedulerRegistry.addTimeout(name, timeout);
+    this.log.debug('[scheduleSimulation %s] job registered', simulationId);
   }
 
   protected isExpired(simulation: SimulationEntity) {
@@ -177,7 +221,35 @@ export class SimulationsService {
     const currentLotteryDay = createdAt
       .clone()
       .add(simulation.totalDraws, 'week');
-    const endYear = createdAt.clone().add(500, 'years');
+    const endYear = createdAt
+      .clone()
+      .add(SimulationsService.EXPIRE_YEARS, 'years');
     return endYear.unix() <= currentLotteryDay.unix();
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async cleanupDeadProcesses() {
+    try {
+      const updatedLines = await this.dataSource.transaction(
+        async (manager) => {
+          return await manager
+            .createQueryBuilder()
+            .update(Simulation)
+            .set({ status: 'stop' })
+            .where({ status: 'started' })
+            .andWhere("updated_at < NOW() - (:seconds * INTERVAL '1 second')", {
+              seconds: SimulationsService.UNCHANGE_TIMEOUT,
+            })
+            .execute();
+        },
+      );
+      this.log.log(
+        'Mark %d simulations as stoped - no updates since %d seconds',
+        updatedLines.affected ?? 0,
+        SimulationsService.UNCHANGE_TIMEOUT,
+      );
+    } catch (error) {
+      this.log.error(error);
+    }
   }
 }

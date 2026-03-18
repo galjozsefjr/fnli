@@ -8,7 +8,7 @@ export type HitStatisticProps = Readonly<{
 
 export const HitStatistics: FC<HitStatisticProps> = ({ matches }) => {
   const matchList: HitStatistic[] = matches ?? Array.from({ length: 4 }, (_, index) => ({
-    matches: index + 1,
+    matches: index + 2,
     hitcount: 0,
   }));
   return (

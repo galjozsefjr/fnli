@@ -22,4 +22,4 @@ import { ScheduleModule } from '@nestjs/schedule';
   providers: [SimulationsService, HitsService, LotteryService],
   exports: [SimulationsService],
 })
-export class SimulationsModule { }
+export class SimulationsModule {}

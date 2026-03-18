@@ -14,6 +14,7 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiConflictResponse,
   ApiCreatedResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -96,6 +97,7 @@ export class SimulationsController {
   @ApiBody({ type: ChangeSimulationSpeedDto })
   @ApiOkResponse({ type: SimulationDetailsDto })
   @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiConflictResponse({ description: 'Cannot update a finished simulation' })
   @ApiNotFoundResponse({ description: 'Simulation does not exists' })
   @ApiBearerAuth('bearer')
   @UseGuards(JwtAuthGuard)

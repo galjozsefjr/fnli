@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { PlayedNumbers } from './PlayedNumbers';
 import { SimulationStatusIcon } from '@/components/simulations/SimulationStatusIcon';
 import { useRouter } from 'next/navigation';
+import { numberFormat } from '@fnli/utils/numberFormat';
 
 const simulationColumns: ColumnDef<SimulationEntity>[] = [
   {
@@ -27,7 +28,7 @@ const simulationColumns: ColumnDef<SimulationEntity>[] = [
     accessorKey: 'totalDraws',
     header: '# Draws',
     cell: ({ getValue }) => {
-      return <p className="text-center">{getValue<number>()}</p>
+      return <p className="text-right">{numberFormat(getValue<number>())}</p>
     }
   },
   {
@@ -69,8 +70,6 @@ export const SimulationsTable: FC<SimulationsTableProps> = ({ simulations, pagin
   });
 
   const { push: goto } = useRouter();
-
-  console.log(table.getRowModel().rows.map((row) => row.getVisibleCells()))
 
   return (
     <div className="overflow-hidden rounded-md border">

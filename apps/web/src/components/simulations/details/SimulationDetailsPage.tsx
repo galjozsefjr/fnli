@@ -1,9 +1,8 @@
 'use client';
 
 import { HitStatistics } from '@/components/simulations/details/HitStatistics';
+import { UpdateInterval } from '@/components/simulations/details/UpdateInterval';
 import { PlayedNumbers } from '@/components/simulations/PlayedNumbers';
-import { Field, FieldLabel } from '@/components/ui/field';
-import { Slider } from '@/components/ui/slider';
 import { useSimulationDetails } from '@/hooks/useSimulationDetails';
 import { numberFormat } from '@fnli/utils/numberFormat';
 import dayjs from 'dayjs';
@@ -16,6 +15,7 @@ export type SimulationDetailsPageProps = Readonly<{
 
 export const SimulationDetailsPage: FC<SimulationDetailsPageProps> = ({ simulationId }) => {
   const { data, error } = useSimulationDetails(simulationId);
+
   if (error) {
     return null;
   }
@@ -35,7 +35,7 @@ export const SimulationDetailsPage: FC<SimulationDetailsPageProps> = ({ simulati
             <dt className="text-sm">Years spent:</dt>
             <dd className="text-sm pl-6">{yearsSpent !== undefined && Math.floor(yearsSpent)}</dd>
             <dt className="text-sm">Cost of tickets:</dt>
-            <dd className="text-sm pl-6 text-nowrap">{data?.totalSpent}</dd>
+            <dd className="text-sm pl-6 text-nowrap">{data?.totalSpent && numberFormat(data.totalSpent)}</dd>
           </dl>
         </div>
         <HitStatistics matches={data?.matches} />
@@ -50,12 +50,11 @@ export const SimulationDetailsPage: FC<SimulationDetailsPageProps> = ({ simulati
           </div>
           <div className="flex flex-row items-center gap-6 sm:gap-12">
             <p className="text-xs sm:text-base font-semibold sm:font-normal">Play with random numbers:</p>
-            <div className="flex justify-center items-center w-[20px] sm:w-8 h-[20px] sm:h-8 rounded-[5px] border-1 border-foreground bg-white drop-shadow-sm">{!data?.fixedNumbers && <CheckIcon size="16" color="var(--foreground)" />}</div>
+            <div className="flex justify-center items-center w-[20px] sm:w-8 h-[20px] sm:h-8 rounded-[5px] border-1 border-foreground bg-white drop-shadow-sm">
+              {!data?.fixedNumbers && <CheckIcon size="16" color="var(--foreground)" />}
+            </div>
           </div>
-          <Field className="gap-3">
-            <FieldLabel htmlFor="simulationInterval" className="text-xs sm:text-base font-semibold sm:font-normal">Speed ({data?.simulationInterval} ms)</FieldLabel>
-            {data && <Slider min={10} max={1000} step={10} defaultValue={[data.simulationInterval]} />}
-          </Field>
+          {data && <UpdateInterval simulationId={simulationId} defaultInterval={data.simulationInterval} />}
         </div>
       </section>
     </>
