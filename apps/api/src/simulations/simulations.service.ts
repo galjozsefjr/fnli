@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  ForbiddenException,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +20,7 @@ import {
 } from '@fnli/types/simulations';
 import dayjs from 'dayjs';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class SimulationsService {
@@ -29,6 +32,7 @@ export class SimulationsService {
   constructor(
     @InjectRepository(Simulation) private simulations: Repository<Simulation>,
     @InjectDataSource() private dataSource: DataSource,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private hits: HitsService,
     private lottery: LotteryService,
     private schedulerRegistry: SchedulerRegistry,
@@ -50,22 +54,17 @@ export class SimulationsService {
     return new PaginatedSimulation(simulations, total, offset, limit);
   }
 
-  public async getSimulationById(userId: string, simulationId: string) {
+  public async getSimulationDetails(simulationId: string) {
     const [simulation, hitStatistic] = await Promise.all([
-      this.getSimulation(userId, simulationId),
+      this.getSimulationById(simulationId),
       this.hits.getHitStatistics(simulationId),
     ]);
     return new SimulationDetailsDto(simulation, hitStatistic);
   }
 
-  protected async getSimulation(userId: string, simulationId: string) {
+  protected async getSimulationById(simulationId: string) {
     const simulation = await this.simulations.findOne({
-      where: {
-        id: simulationId,
-        owner: {
-          id: userId,
-        },
-      },
+      where: { id: simulationId },
       relations: {
         owner: true,
       },
@@ -103,7 +102,7 @@ export class SimulationsService {
     interval: number,
   ) {
     // check if simulation exists & belongs to the user
-    const simulation = await this.getSimulation(userId, simulationId);
+    const simulation = await this.getSimulationById(simulationId);
     if (simulation.status === 'finished') {
       throw new ConflictException(
         'Cannot change the speed of a finished simulation',
@@ -119,12 +118,12 @@ export class SimulationsService {
     if (!updateResult.affected) {
       throw new NotFoundException();
     }
-    return this.getSimulationById(userId, simulationId);
+    return this.getSimulationDetails(simulationId);
   }
 
   public async runSimulation(simulationId: string) {
     this.log.debug('Running simulation %s', simulationId);
-    const simulation = await this.simulations.findOneBy({ id: simulationId });
+    const simulation = await this.getSimulationById(simulationId);
     if (!simulation || simulation.status === SimulationStatus.FINISHED) {
       this.log.error(
         simulation
@@ -146,6 +145,7 @@ export class SimulationsService {
 
     await this.dataSource.transaction(async (manager) => {
       this.log.debug('[simulation %s] start update', simulationId);
+
       const winningNumbers = this.lottery.createRandomLotteryNumbers();
       const currentNumbers =
         simulation.fixedNumbers ?? this.lottery.createRandomLotteryNumbers();
@@ -153,6 +153,7 @@ export class SimulationsService {
         winningNumbers,
         currentNumbers,
       );
+
       this.log.debug(
         '[simulation %s] numbers created: bet - [%s] win - [%s] - %d matches',
         simulationId,
@@ -160,10 +161,12 @@ export class SimulationsService {
         winningNumbers.join(','),
         matchingItems,
       );
+
       const status: SimulationStatus =
         matchingItems === 5
           ? SimulationStatus.FINISHED
           : SimulationStatus.STARTED;
+
       this.log.debug('[simulation %s] new status: %s', simulationId, status);
 
       const updates = await manager.update(Simulation, simulationId, {
@@ -172,11 +175,13 @@ export class SimulationsService {
         lastDraw: winningNumbers,
         lastPlay: currentNumbers,
       });
+
       this.log.debug(
         '[simulation %s] simulation updated %o',
         simulationId,
         updates,
       );
+
       if (matchingItems > 1) {
         const hit = manager.create(Hits, {
           simulation: { id: simulationId },
@@ -185,9 +190,15 @@ export class SimulationsService {
           matches: matchingItems,
         });
         await manager.save(hit);
+
         this.log.debug('[simulation %s] save match: %d', simulationId, hit.id);
       }
     });
+    await this.cacheManager.set(
+      `simulation:${simulationId}`,
+      await this.getSimulationDetails(simulationId),
+      simulation.simulationInterval * 10,
+    );
     this.log.debug('[simulation %s] schedule next job', simulationId);
     this.scheduleNext(simulationId, simulation.simulationInterval);
   }
@@ -229,6 +240,23 @@ export class SimulationsService {
       .clone()
       .add(SimulationsService.EXPIRE_YEARS, 'years');
     return endYear.unix() <= currentLotteryDay.unix();
+  }
+
+  async getCachedSimulationDetails(userId: string, simulationId: string) {
+    const cache = await this.cacheManager.get<SimulationDetailsDto>(
+      `simulation:${simulationId}`,
+    );
+    if (cache) {
+      if (!cache.hasOwner(userId)) {
+        throw new ForbiddenException('Access denied');
+      }
+      return cache;
+    }
+    const simulation = await this.getSimulationDetails(simulationId);
+    if (!simulation.hasOwner(userId)) {
+      throw new NotFoundException('Cannot find simulation');
+    }
+    return simulation;
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

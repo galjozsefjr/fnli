@@ -16,14 +16,6 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     networks:
       - app
-  redis:
-    container_name: redis_queues
-    image: redis:8.6.1-alpine
-    restart: always
-    ports:
-      - '6379:6379'
-    networks:
-      - app
   api:
     build:
       context: .
@@ -37,8 +29,6 @@ services:
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
       - JWT_TOKEN_SECRET=${JWT_TOKEN_SECRET}
-      - REDIS_PORT=6379
-      - REDIS_HOST=redis
     ports:
       - '3001:3001'
     volumes:

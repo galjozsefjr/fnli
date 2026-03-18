@@ -146,6 +146,8 @@ export class SimulationDetailsDto
   })
   matches: HitStatistic[];
 
+  protected ownerId?: string;
+
   constructor(
     {
       id,
@@ -156,6 +158,7 @@ export class SimulationDetailsDto
       simulationInterval,
       lastDraw,
       lastPlay,
+      owner,
     }: SimulationEntity,
     hitStatistic: HitStatistic[],
   ) {
@@ -168,6 +171,7 @@ export class SimulationDetailsDto
     this.simulationInterval = simulationInterval;
     this.lastDraw = lastDraw;
     this.lastPlay = lastPlay;
+    this.ownerId = owner?.id;
     const matches = hitStatistic.reduce(
       (matchList, stat) => {
         matchList.set(stat.matches, stat.hitcount);
@@ -185,6 +189,10 @@ export class SimulationDetailsDto
       .toSorted(
         ({ matches: matchesA }, { matches: matchesB }) => matchesA - matchesB,
       );
+  }
+
+  public hasOwner(userId: string) {
+    return this.ownerId === userId;
   }
 }
 

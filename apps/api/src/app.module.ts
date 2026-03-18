@@ -1,5 +1,6 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
+import { CacheModule } from '@nestjs/cache-manager';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 import type { IncomingMessage, ServerResponse } from 'http';
@@ -51,6 +52,7 @@ const isProd = process.env.NODE_ENV === 'production';
         },
       },
     }),
+    CacheModule.register(),
     TypeOrmModule.forRoot(dataSourceOptions as TypeOrmModuleOptions),
     AuthModule,
     SimulationsModule,

@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   MessageEvent,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -21,7 +22,7 @@ import {
   ApiOperation,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { distinct, interval, map, Observable, switchMap } from 'rxjs';
+import { interval, map, Observable, switchMap } from 'rxjs';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthToken, type UserAuthToken } from 'src/auth/auth-token.decorator';
 
@@ -38,7 +39,7 @@ import { PaginationParameters } from 'src/utils/pagination';
 
 @Controller('/api/simulations')
 export class SimulationsController {
-  constructor(private simulations: SimulationsService) {}
+  constructor(private simulations: SimulationsService) { }
 
   @Get('/')
   @ApiOperation({
@@ -82,11 +83,17 @@ export class SimulationsController {
   @ApiNotFoundResponse({ description: 'Simulation does not exists' })
   @ApiBearerAuth('bearer')
   @UseGuards(JwtAuthGuard)
-  public getSimulation(
+  public async getSimulation(
     @AuthToken() token: UserAuthToken,
     @Param() { simulationId }: SimulationId,
   ) {
-    return this.simulations.getSimulationById(token.userId, simulationId);
+    const simulation =
+      await this.simulations.getSimulationDetails(simulationId);
+    if (!simulation.hasOwner(token.userId)) {
+      // Technically it's forbidden; hide the existence of id
+      throw new NotFoundException('Cannot find simulation');
+    }
+    return simulation;
   }
 
   @Patch('/:simulationId')
@@ -113,16 +120,16 @@ export class SimulationsController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Sse('/:simulationId/events')
   realTimeUpdate(
     @AuthToken() token: UserAuthToken,
     @Param() { simulationId }: SimulationId,
   ): Observable<MessageEvent> {
-    return interval(500).pipe(
+    return interval(1000).pipe(
       switchMap(() =>
-        this.simulations.getSimulationById(token.userId, simulationId),
+        this.simulations.getCachedSimulationDetails(token.userId, simulationId),
       ),
-      distinct(),
       map((simulation) => {
         return { data: simulation };
       }),

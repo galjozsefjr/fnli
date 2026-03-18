@@ -10,6 +10,7 @@ import { Simulation } from './simulations.entity';
 import { SimulationsService } from './simulations.service';
 import { SimulationsController } from './simulations.controller';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
     AuthModule,
     UsersModule,
+    CacheModule.register(),
   ],
   controllers: [SimulationsController],
   providers: [SimulationsService, HitsService, LotteryService],
